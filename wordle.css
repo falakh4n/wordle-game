@@ -1,0 +1,141 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background-color: #333; /* Dark grey background color */
+    color: white; /* Default text color is white */
+    animation: fade-in 1s ease-in-out; /* Fade-in effect for the entire page */
+}
+
+hr {
+    width: 500px;
+    margin: 20px auto; /* Center the HR element with some vertical margin */
+    border-color: white; /* Make the border of the HR element white */
+    opacity: 0;
+    animation: slide-down 1s ease-in-out forwards; /* Slide-down animation */
+    animation-delay: 0.5s; /* Delay for synchronization */
+}
+
+#title {
+    font-size: 36px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin: 20px 0; /* Add margin to separate from other elements */
+    animation: bounce-in 1s ease-in-out; /* Bounce-in effect for the title */
+}
+
+#board {
+    width: 350px;
+    height: 420px;
+    margin: 20px auto; /* Center the board with vertical margin */
+    display: flex;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fade-in 1s ease-in-out forwards; /* Fade-in effect for the board */
+    animation-delay: 1s; /* Delay for synchronization */
+}
+
+.tile {
+    border: 2px solid lightgrey;
+    width: 60px;
+    height: 60px;
+    margin: 2.5px;
+    color: white; /* Set the text color to white */
+    font-size: 36px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
+    opacity: 0;
+    animation: fade-in 0.5s ease-in-out forwards; /* Fade-in effect for tiles */
+    animation-delay: 1.5s; /* Delay for synchronization */
+}
+
+.tile:hover {
+    transform: scale(1.1); /* Slightly enlarge the tile */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Add shadow for depth */
+}
+
+.correct {
+    background-color: #ADD8E6; /* Light blue */
+    color: white; /* Ensure text color is white */
+    border-color: white;
+    transition: background-color 0.5s; /* Smooth transition to color */
+}
+
+.present {
+    background-color: #FFEB3B; /* Yellow */
+    color: black; /* Override text color to black for contrast */
+    border-color: white;
+    transition: background-color 0.5s; /* Smooth transition to color */
+}
+
+.absent {
+    background-color: #FF0000; /* Red */
+    color: white; /* Ensure text color is white */
+    border-color: white;
+    transition: background-color 0.5s; /* Smooth transition to color */
+}
+
+#keyboard-container {
+    margin: 20px auto; /* Center the keyboard container with vertical margin */
+    width: 400px; /* Set the width of the container to match your keyboard row */
+    opacity: 0;
+    animation: fade-in 1s ease-in-out forwards; /* Fade-in effect for the keyboard */
+    animation-delay: 1.5s; /* Delay for synchronization */
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px; /* Space between rows */
+}
+
+.key-tile, .enter-key-tile, .backspace-key-tile {
+    border: 1px solid lightgrey;
+    width: 36px;
+    height: 40px;
+    margin: 1px;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
+    opacity: 0;
+    animation: fade-in 0.5s ease-in-out forwards; /* Fade-in effect for keys */
+    animation-delay: 1.7s; /* Delay for synchronization */
+}
+
+.key-tile:hover, .enter-key-tile:hover, .backspace-key-tile:hover {
+    transform: scale(1.1); /* Slightly enlarge the key */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Add shadow for depth */
+}
+
+.enter-key-tile {
+    width: 76px;
+}
+
+.backspace-key-tile {
+    width: 76px;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slide-down {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce-in {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
