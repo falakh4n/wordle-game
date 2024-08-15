@@ -5,15 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="wordle.css">
-    <script src="wordle.js"></script>
+    <script src="wordle.js" defer></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        /* Basic styling for dark mode */
+        body[data-theme='dark'] {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        #theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
     <h1 id="title">GuessGrid</h1>
     <hr>
     <br>
-    <div id="board">
-    </div>
+    <!-- Toggle Button with Font Awesome Icons -->
+    <button id="theme-toggle" aria-label="Toggle Dark/Light Mode">
+        <i id="theme-icon" class="fas fa-sun"></i> <!-- Default icon -->
+    </button>
+    <div id="board"></div>
     <br>
     <h1 id="answer"></h1>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="correct-sound" src="correct.mp3.mp3"></audio>
+    <audio id="wrong-sound" src="wrong.mp3.mp3"></audio>
 </body>
 </html>
