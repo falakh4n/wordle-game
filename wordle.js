@@ -1,5 +1,11 @@
+var correctSound = document.getElementById('correct-sound');
+var wrongSound = document.getElementById('wrong-sound');
+
+
+
 var height = 6; //number of guesses
 var width = 5; //length of the word
+
 
 var row = 0; //current guess (attempt #)
 var col = 0; //current letter for that attempt
@@ -15,17 +21,60 @@ guessList = guessList.concat(wordList);
 var word = wordList[Math.floor(Math.random()*wordList.length)].toUpperCase();
 console.log(word);
 
-window.onload = function(){
-    intialize();
+
+// Initialize the game
+window.onload = function() {
+    initialize();
+    setupThemeToggle();
+};
+
+function setupThemeToggle() {
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    // Check for saved user preference
+    const savedTheme = localStorage.getItem('theme') || 'light';
+
+    if (savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+    }
+
+    themeToggleButton.addEventListener('click', () => {
+        if (document.body.getAttribute('data-theme') === 'dark') {
+            document.body.removeAttribute('data-theme');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+            localStorage.setItem('theme', 'light'); // Save user preference
+        } else {
+            document.body.setAttribute('data-theme', 'dark');
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+            localStorage.setItem('theme', 'dark'); // Save user preference
+        }
+    });
 }
 
 
-function intialize() {
+async function fetchDefinition(word) {
+    try {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const data = await response.json();
 
+        // Extract the definition
+        let definition = data[0].meanings[0].definitions[0].definition;
+        return `Definition: ${definition}`;
+    } catch (error) {
+        console.error('Error fetching definition:', error);
+        return "Unable to fetch the definition.";
+    }
+}
+
+function initialize() {
     // Create the game board
     for (let r = 0; r < height; r++) {
         for (let c = 0; c < width; c++) {
-            // <span id="0-0" class="tile">P</span>
             let tile = document.createElement("span");
             tile.id = r.toString() + "-" + c.toString();
             tile.classList.add("tile");
@@ -34,172 +83,158 @@ function intialize() {
         }
     }
 
-    // Create the key board
-    let keyboard = [
+    // Create the keyboard
+    const keyboard = [
         ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
         ["A", "S", "D", "F", "G", "H", "J", "K", "L", " "],
-        ["Enter", "Z", "X", "C", "V", "B", "N", "M", "⌫" ]
-    ]
+        ["Enter", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
+    ];
 
-    for (let i = 0; i < keyboard.length; i++) {
-        let currRow = keyboard[i];
-        let keyboardRow = document.createElement("div");
+    for (const rowKeys of keyboard) {
+        const keyboardRow = document.createElement("div");
         keyboardRow.classList.add("keyboard-row");
 
-        for (let j = 0; j < currRow.length; j++) {
-            let keyTile = document.createElement("div");
-
-            let key = currRow[j];
+        for (const key of rowKeys) {
+            const keyTile = document.createElement("div");
             keyTile.innerText = key;
-            if (key == "Enter") {
+            if (key === "Enter") {
                 keyTile.id = "Enter";
-            }
-            else if (key == "⌫") {
+            } else if (key === "⌫") {
                 keyTile.id = "Backspace";
+            } else if ("A" <= key && key <= "Z") {
+                keyTile.id = "Key" + key;
             }
-            else if ("A" <= key && key <= "Z") {
-                keyTile.id = "Key" + key; // "Key" + "A";
-            } 
 
             keyTile.addEventListener("click", processKey);
 
-            if (key == "Enter") {
-                keyTile.classList.add("enter-key-tile");
-            } else {
-                keyTile.classList.add("key-tile");
-            }
+            keyTile.classList.add(key === "Enter" ? "enter-key-tile" : "key-tile");
             keyboardRow.appendChild(keyTile);
         }
         document.body.appendChild(keyboardRow);
     }
-    
 
-    // Listen for Key Press
+    // Listen for key press
     document.addEventListener("keyup", (e) => {
         processInput(e);
-    })
+    });
 }
 
 function processKey() {
-    e = { "code" : this.id };
+    const e = { "code": this.id };
     processInput(e);
 }
 
-function processInput(e) {
-    if (gameOver) return; 
+async function processInput(e) {
+    if (gameOver) return;
 
-    // alert(e.code);
     if ("KeyA" <= e.code && e.code <= "KeyZ") {
         if (col < width) {
-            let currTile = document.getElementById(row.toString() + '-' + col.toString());
-            if (currTile.innerText == "") {
+            const currTile = document.getElementById(row.toString() + '-' + col.toString());
+            if (currTile.innerText === "") {
                 currTile.innerText = e.code[3];
                 col += 1;
             }
         }
-    }
-    else if (e.code == "Backspace") {
+    } else if (e.code === "Backspace") {
         if (0 < col && col <= width) {
-            col -=1;
+            col -= 1;
         }
-        let currTile = document.getElementById(row.toString() + '-' + col.toString());
+        const currTile = document.getElementById(row.toString() + '-' + col.toString());
         currTile.innerText = "";
+    } else if (e.code === "Enter") {
+        await update();
     }
 
-    else if (e.code == "Enter") {
-        update();
-    }
-
-    if (!gameOver && row == height) {
+    if (!gameOver && row === height) {
         gameOver = true;
         document.getElementById("answer").innerText = word;
+        await fetchDefinition(word.toLowerCase()).then(definition => {
+            document.getElementById("answer").innerText += ` ${definition}`;
+        });
     }
 }
 
-function update() {
+async function update() {
     let guess = "";
     document.getElementById("answer").innerText = "";
 
-    //string up the guesses into the word
+    // Collect the guess from the board
     for (let c = 0; c < width; c++) {
-        let currTile = document.getElementById(row.toString() + '-' + c.toString());
-        let letter = currTile.innerText;
+        const currTile = document.getElementById(row.toString() + '-' + c.toString());
+        const letter = currTile.innerText;
         guess += letter;
     }
 
-    guess = guess.toLowerCase(); //case sensitive
+    guess = guess.toLowerCase(); // Case sensitive
     console.log(guess);
 
     if (!guessList.includes(guess)) {
         document.getElementById("answer").innerText = "Not in word list";
+        wrongSound.play(); // Play the wrong sound effect
         return;
     }
     
-    //start processing guess
+    // Start processing guess
     let correct = 0;
-
-    let letterCount = {}; //keep track of letter frequency, ex) KENNY -> {K:1, E:1, N:2, Y: 1}
+    const letterCount = {}; // Keep track of letter frequency
     for (let i = 0; i < word.length; i++) {
-        let letter = word[i];
-
-        if (letterCount[letter]) {
-           letterCount[letter] += 1;
-        } 
-        else {
-           letterCount[letter] = 1;
-        }
+        const letter = word[i];
+        letterCount[letter] = (letterCount[letter] || 0) + 1;
     }
 
     console.log(letterCount);
 
-    //first iteration, check all the correct ones first
+    // First iteration, check all the correct ones first
     for (let c = 0; c < width; c++) {
-        let currTile = document.getElementById(row.toString() + '-' + c.toString());
-        let letter = currTile.innerText;
+        const currTile = document.getElementById(row.toString() + '-' + c.toString());
+        const letter = currTile.innerText;
 
-        //Is it in the correct position?
-        if (word[c] == letter) {
+        // Is it in the correct position?
+        if (word[c] === letter) {
             currTile.classList.add("correct");
 
-            let keyTile = document.getElementById("Key" + letter);
+            const keyTile = document.getElementById("Key" + letter);
             keyTile.classList.remove("present");
             keyTile.classList.add("correct");
 
             correct += 1;
-            letterCount[letter] -= 1; //deduct the letter count
-        }
-
-        if (correct == width) {
-            gameOver = true;
+            letterCount[letter] -= 1; // Deduct the letter count
         }
     }
 
-    console.log(letterCount);
-    //go again and mark which ones are present but in wrong position
-    for (let c = 0; c < width; c++) {
-        let currTile = document.getElementById(row.toString() + '-' + c.toString());
-        let letter = currTile.innerText;
+    if (correct === width) {
+        gameOver = true;
+        document.getElementById("answer").innerText = `Congratulations! You guessed the word: ${word}`;
+        correctSound.play(); // Play the correct sound effect
+        await fetchDefinition(word.toLowerCase()).then(definition => {
+            document.getElementById("answer").innerText += ` ${definition}`;
+        });
+    } else {
+        // Go again and mark which ones are present but in the wrong position
+        for (let c = 0; c < width; c++) {
+            const currTile = document.getElementById(row.toString() + '-' + c.toString());
+            const letter = currTile.innerText;
 
-        // skip the letter if it has been marked correct
-        if (!currTile.classList.contains("correct")) {
-            //Is it in the word?         //make sure we don't double count
-            if (word.includes(letter) && letterCount[letter] > 0) {
-                currTile.classList.add("present");
-                
-                let keyTile = document.getElementById("Key" + letter);
-                if (!keyTile.classList.contains("correct")) {
-                    keyTile.classList.add("present");
+            // Skip the letter if it has been marked correct
+            if (!currTile.classList.contains("correct")) {
+                // Is it in the word? Make sure we don't double count
+                if (word.includes(letter) && letterCount[letter] > 0) {
+                    currTile.classList.add("present");
+
+                    const keyTile = document.getElementById("Key" + letter);
+                    if (!keyTile.classList.contains("correct")) {
+                        keyTile.classList.add("present");
+                    }
+                    letterCount[letter] -= 1;
+                } else {
+                    currTile.classList.add("absent");
+                    const keyTile = document.getElementById("Key" + letter);
+                    keyTile.classList.add("absent");
                 }
-                letterCount[letter] -= 1;
-            } // Not in the word or (was in word but letters all used up to avoid overcount)
-            else {
-                currTile.classList.add("absent");
-                let keyTile = document.getElementById("Key" + letter);
-                keyTile.classList.add("absent")
             }
         }
-    }
 
-    row += 1; //start new row
-    col = 0; //start at 0 for new row
+        row += 1; // Start new row
+        col = 0; // Start at 0 for new row
+    }
 }
